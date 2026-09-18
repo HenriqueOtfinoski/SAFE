@@ -5,11 +5,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.imagem_facial import ImagemFacial
+from app.services.deteccao_facial import detectar_rostos
 from app.services.pessoa import buscar_pessoa
 
 TAMANHO_MAXIMO = 5 * 1024 * 1024
 
 class ImagemFacialInvalida(ValueError):
+    pass
+
+class ImagemFacialNaoEncontrada(Exception):
     pass
 
 
@@ -59,6 +63,20 @@ def criar_imagem_facial(
 
     tipo_mime, largura, altura = validar_imagem(dados)
 
+    rostos = detectar_rostos(dados)
+
+    if not rostos:
+        raise ImagemFacialInvalida(
+            "Nenhum rosto foi detectado, envie outra foto"
+        )
+
+    if len(rostos) >1:
+        raise ImagemFacialInvalida(
+            "A imagem deve conter apenas um rosto"
+        )
+
+
+
     imagem = ImagemFacial(
         pessoa_id= pessoa.id,
         dados=dados,
@@ -92,3 +110,24 @@ def listar_imagens(
     )
 
     return list(database.scalars(consulta).all())
+
+
+def buscar_imagens(
+    database: Session,
+    pessoa_id: int,
+    imagem_id: int,
+) -> ImagemFacial: 
+    buscar_pessoa(database, pessoa_id)
+
+    consulta = select(ImagemFacial).where(
+        ImagemFacial.id == imagem_id,
+        ImagemFacial.pessoa_id == pessoa_id,
+    )
+    imagem = database.scalar(consulta)
+
+    if imagem is None:
+        raise ImagemFacialNaoEncontrada(
+            "Imagem facial nao encontrada"
+        )
+
+    return imagem

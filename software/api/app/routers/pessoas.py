@@ -27,6 +27,7 @@ from app.services import imagem_facial as imagem_facial_service
 from app.services.imagem_facial import (
     TAMANHO_MAXIMO,
     ImagemFacialInvalida,
+    ImagemFacialNaoEncontrada,
     criar_imagem_facial,
 )
 
@@ -191,3 +192,46 @@ def listar_imagens(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(erro)
         )from erro
+
+@router.get(
+    "/{pessoa_id}/imagens/{imagem_id}/arquivo",
+    responses={
+        200: {
+            "content": {
+                "image/jpeg": {},
+                "image/png": {},
+            },
+            "description": "Arquivo da imagem facial.",
+        }
+    },
+)
+def importar_imagem(
+    pessoa_id: int,
+    imagem_id: int,
+    database: Session = Depends(get_db),
+) -> Response:
+
+    try:
+        imagem = imagem_facial_service.buscar_imagens(
+            database,
+            pessoa_id,
+            imagem_id,
+        )
+    except(
+        PessoaNaoEncontrada,
+        ImagemFacialNaoEncontrada,
+    ) as erro: 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(erro)
+        )from erro
+
+    return Response(
+        content=imagem.dados,
+        media_type=imagem.tipo_mime,
+        headers={
+            "Content-Disposition":(
+                f'inline; filename="imagem-{imagem.id}"'
+            )
+        },
+    )
