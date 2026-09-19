@@ -18,7 +18,8 @@ import requests
 from config import (
     API_URL,
     CAMINHO_HAAR,
-    CAMINHO_MODELO,
+    CAMINHO_MODELO_NOMES,
+    CAMINHO_MODELO_XML,
     CAMERA_INDEX,
     DIRETORIO_DATASET,
     DURACAO_STROBE,
@@ -32,7 +33,6 @@ from config import (
 from controle_acesso import liberar_acesso, recusar_acesso
 from controle_gpio import gpio_controller
 
-CAMINHO_NOMES_JSON = BASE_PATH / "modelo_lbph_nomes.json"
 
 
 def criar_detector():
@@ -131,10 +131,10 @@ def treinar_modelo(detector):
 
     # Salva o modelo para inicializações instantâneas no Raspberry Pi
     try:
-        reconhecedor.write(str(CAMINHO_MODELO))
-        with open(CAMINHO_NOMES_JSON, "w", encoding="utf-8") as f:
+        reconhecedor.write(str(CAMINHO_MODELO_XML))
+        with open(CAMINHO_MODELO_NOMES, "w", encoding="utf-8") as f:
             json.dump({str(k): v for k, v in nomes.items()}, f)
-        print(f"Modelo salvo em {CAMINHO_MODELO}")
+        print(f"Modelo salvo em {CAMINHO_MODELO_XML}")
     except Exception as e:
         print(f"Erro ao salvar arquivo de modelo: {e}")
 
@@ -147,14 +147,14 @@ def carregar_reconhecedor(detector):
         radius=1, neighbors=8, grid_x=8, grid_y=8, threshold=LBPH_THRESHOLD
     )
 
-    if CAMINHO_MODELO.exists() and CAMINHO_NOMES_JSON.exists():
+    if CAMINHO_MODELO_XML.exists() and CAMINHO_MODELO_NOMES.exists():
         try:
-            reconhecedor.read(str(CAMINHO_MODELO))
-            with open(CAMINHO_NOMES_JSON, "r", encoding="utf-8") as f:
+            reconhecedor.read(str(CAMINHO_MODELO_XML))
+            with open(CAMINHO_MODELO_NOMES, "r", encoding="utf-8") as f:
                 nomes_raw = json.load(f)
                 nomes = {int(k): v for k, v in nomes_raw.items()}
             print(
-                f"Modelo LBPH pré-treinado carregado com sucesso de {CAMINHO_MODELO.name}"
+                f"Modelo LBPH pré-treinado carregado com sucesso de {CAMINHO_MODELO_XML.name}"
             )
             return reconhecedor, nomes
         except Exception as e:
