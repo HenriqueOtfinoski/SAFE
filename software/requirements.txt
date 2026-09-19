@@ -3,6 +3,9 @@ uvicorn
 alembic
 sqlalchemy
 pytest
-httpx2
+httpx
 opencv-contrib-python-headless
 python-multipart
+requests
+gpiozero
+python-dotenv
