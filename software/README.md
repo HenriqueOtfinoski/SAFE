@@ -24,8 +24,8 @@ _Nota: Os pinos podem ser alterados definindo as variáveis de ambiente `PIN_STR
 | -------------- | :-----: | :-----: | ------------------------------------------------------ |
 | **Aguardando** |   `0`   |   `0`   | Câmera ativa, nenhum rosto em processamento.           |
 | **Validando**  |   `1`   |   `0`   | Rosto detectado, acumulando confirmação de identidade. |
-| **Aceito**     |   `1`   |   `1`   | Rosto reconhecido. Acesso Liberado.                    |
-| **Negado**     |   `1`   |   `0`   | Rosto não reconhecido ou abaixo do threshold.          |
+| **Aceito**     |   `0`   |   `1`   | Rosto reconhecido. Acesso Liberado.                    |
+| **Negado**     |   `1`   |   `1`   | Rosto não reconhecido ou abaixo do threshold.          |
 
 ---
 
