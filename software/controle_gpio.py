@@ -3,13 +3,13 @@ Módulo de Controle GPIO para o projeto SAFE.
 
 Controla os sinais de saída:
   - S (Strobe): Sinal de processamento / ativação da FSM
-  - V (Validade): Sinal de resultado (1 = Aceito, 0 = Negado/Validando)
+  - V (Validade): Sinal de resultado (1 = Aceito/Negado, 0 = Validando/Aguardando)
 
 Estados da FSM (CIs 7408, 7404, 7432):
   - Aguardando: S = 0, V = 0
   - Validando:  S = 1, V = 0
-  - Aceito:     S = 1, V = 1
-  - Negado:     S = 1, V = 0
+  - Aceito:     S = 0, V = 1
+  - Negado:     S = 1, V = 1
 """
 
 import logging
@@ -82,7 +82,7 @@ class ControladorGPIO:
                 self._validade.off()
 
     def estado_aguardando(self) -> None:
-        # Estado Aguardando: S = 0, V = 0"""
+        # Estado Aguardando: S = 0, V = 0
         self._set_pins(s=False, v=False)
         if self._estado_atual != "Aguardando":
             self._estado_atual = "Aguardando"
@@ -96,18 +96,18 @@ class ControladorGPIO:
             logger.info("[FSM State] VALIDANDO -> S=1, V=0")
 
     def estado_aceito(self) -> None:
-        # Estado Aceito: S = 1, V = 1
-        self._set_pins(s=True, v=True)
+        # Estado Aceito: S = 0, V = 1
+        self._set_pins(s=False, v=True)
         if self._estado_atual != "Aceito":
             self._estado_atual = "Aceito"
-            logger.info("[FSM State] ACEITO -> S=1, V=1 (Acesso Liberado)")
+            logger.info("[FSM State] ACEITO -> S=0, V=1 (Acesso Liberado)")
 
     def estado_negado(self) -> None:
-        # Estado Negado: S = 1, V = 0
-        self._set_pins(s=True, v=False)
+        # Estado Negado: S = 1, V = 1
+        self._set_pins(s=True, v=True)
         if self._estado_atual != "Negado":
             self._estado_atual = "Negado"
-            logger.info("[FSM State] NEGADO -> S=1, V=0 (Acesso Recusado)")
+            logger.info("[FSM State] NEGADO -> S=1, V=1 (Acesso Recusado)")
 
     def obter_estado(self) -> str:
         return self._estado_atual
