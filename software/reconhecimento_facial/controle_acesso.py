@@ -10,7 +10,7 @@ from controle_gpio import gpio_controller
 
 
 def liberar_acesso(nome: str = "") -> None:
-    # Ativa o sinal de Acesso Aceito (S=1, V=1) na FSM via GPIO.
+    # Ativa o sinal de Acesso Aceito (S=0, V=1) na FSM via GPIO.
     print(f"\n==========================================")
     print(f"   ACESSO ACEITO PARA: {nome or 'Usuário'}")
     print(f"==========================================\n")
@@ -21,7 +21,7 @@ def liberar_acesso(nome: str = "") -> None:
 
 
 def recusar_acesso() -> None:
-    # Ativa o sinal de Acesso Negado (S=1, V=0) na FSM via GPIO.
+    # Ativa o sinal de Acesso Negado (S=1, V=1) na FSM via GPIO.
     print(f"\n------------------------------------------")
     print(f"   ACESSO NEGADO (Pessoa Desconhecida)")
     print(f"------------------------------------------\n")
