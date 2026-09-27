@@ -2,10 +2,11 @@
 Módulo de Controle GPIO para o projeto SAFE.
 
 Controla os sinais de saída:
-  - S (Strobe): Sinal de processamento / ativação da FSM
-  - V (Validade): Sinal de resultado (1 = Aceito/Negado, 0 = Validando/Aguardando)
+  - S (Strobe): Sinal de processamento / ativação da FSM (GPIO 17 / Pino 11)
+  - V (Validade): Sinal de resultado (1 = Aceito/Negado, 0 = Validando/Aguardando) (GPIO 27 / Pino 13)
+  - CLK (Clock): Sinal de clock para amostragem/latch na FSM (GPIO 22 / Pino 15)
 
-Estados da FSM (CIs 7408, 7404, 7432):
+Estados da FSM (CIs 7408, 7404, 7432, 7474):
   - Aguardando: S = 0, V = 0
   - Validando:  S = 1, V = 0
   - Aceito:     S = 0, V = 1
@@ -14,9 +15,10 @@ Estados da FSM (CIs 7408, 7404, 7432):
 
 import logging
 import sys
+import time
 from typing import Optional
 
-from config import PIN_STROBE, PIN_VALIDADE
+from config import PIN_CLOCK, PIN_STROBE, PIN_VALIDADE
 
 logging.basicConfig(
     level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s"
@@ -33,13 +35,20 @@ except ImportError:
 
 
 class ControladorGPIO:
-    # Gerenciador dos sinais GPIO S e V do SAFE.
+    # Gerenciador dos sinais GPIO S, V e CLK do SAFE.
 
-    def __init__(self, pin_strobe: int = PIN_STROBE, pin_validade: int = PIN_VALIDADE):
+    def __init__(
+        self,
+        pin_strobe: int = PIN_STROBE,
+        pin_validade: int = PIN_VALIDADE,
+        pin_clock: int = PIN_CLOCK,
+    ):
         self.pin_strobe_num = pin_strobe
         self.pin_validade_num = pin_validade
+        self.pin_clock_num = pin_clock
         self._strobe: Optional[object] = None
         self._validade: Optional[object] = None
+        self._clock: Optional[object] = None
         self._estado_atual = "Aguardando"
         self._is_hardware = False
 
@@ -52,9 +61,12 @@ class ControladorGPIO:
                 self._validade = OutputDevice(
                     self.pin_validade_num, initial_value=False
                 )
+                self._clock = OutputDevice(
+                    self.pin_clock_num, initial_value=False
+                )
                 self._is_hardware = True
                 logger.info(
-                    f"GPIO Hardware inicializado (RPi 5): S=GPIO{self.pin_strobe_num}, V=GPIO{self.pin_validade_num}"
+                    f"GPIO Hardware inicializado (RPi 5): S=GPIO{self.pin_strobe_num}, V=GPIO{self.pin_validade_num}, CLK=GPIO{self.pin_clock_num}"
                 )
             except Exception as e:
                 logger.warning(
@@ -80,6 +92,24 @@ class ControladorGPIO:
                 self._validade.on()
             else:
                 self._validade.off()
+
+    def pulsar_clock(self, duracao: float = 0.05) -> None:
+        """Envia um pulso de clock (0 -> 1 -> 0) de duração especificada (em segundos)."""
+        if self._is_hardware and self._clock:
+            self._clock.on()
+            time.sleep(duracao)
+            self._clock.off()
+        logger.info(f"[GPIO Clock] Pulso de clock enviado (CLK=GPIO{self.pin_clock_num})")
+
+    def clock_alto(self) -> None:
+        """Define o sinal de clock em nível alto (1)."""
+        if self._is_hardware and self._clock:
+            self._clock.on()
+
+    def clock_baixo(self) -> None:
+        """Define o sinal de clock em nível baixo (0)."""
+        if self._is_hardware and self._clock:
+            self._clock.off()
 
     def estado_aguardando(self) -> None:
         # Estado Aguardando: S = 0, V = 0
@@ -118,6 +148,8 @@ class ControladorGPIO:
             try:
                 self._strobe.close()
                 self._validade.close()
+                if self._clock:
+                    self._clock.close()
             except Exception:
                 pass
         logger.info("GPIO finalizado.")

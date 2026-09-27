@@ -26,6 +26,7 @@ def exibir_menu():
     print(" [V] -> Validando   (S=1, V=0)")
     print(" [C] -> Aceito      (S=0, V=1)")
     print(" [N] -> Negado      (S=1, V=1)")
+    print(" [K] -> Pulso CLK   (0 -> 1 -> 0)")
     print(" [Q] -> Sair")
     print("===========================================")
 
@@ -35,7 +36,7 @@ def main():
 
     try:
         while True:
-            opcao = input("\nDigite a inicial do estado (A, V, C, N ou Q): ").strip().lower()
+            opcao = input("\nDigite a opção (A, V, C, N, K ou Q): ").strip().lower()
 
             if not opcao:
                 continue
@@ -52,11 +53,14 @@ def main():
             elif opcao == "n":
                 gpio_controller.estado_negado()
                 print(">> Estado alterado para: NEGADO (S=1, V=1)")
+            elif opcao == "k":
+                gpio_controller.pulsar_clock()
+                print(">> Pulso manual enviado no pino CLK!")
             elif opcao == "q":
                 print("Encerrando testador de GPIO...")
                 break
             else:
-                print("[Erro] Opção inválida! Digite A, V, C, N ou Q.")
+                print("[Erro] Opção inválida! Digite A, V, C, N, K ou Q.")
 
     except KeyboardInterrupt:
         print("\nInterrompido pelo usuário.")

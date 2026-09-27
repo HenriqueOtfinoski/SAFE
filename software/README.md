@@ -6,13 +6,14 @@ Módulo de processamento leve e reconhecimento facial para **Raspberry Pi 5 (4 G
 
 ## 🔌 Mapeamento de Pinos GPIO
 
-Os sinais lógicos de controle da FSM (CIs 7408, 7404, 7432) são acionados pelos pinos GPIO do Raspberry Pi 5:
+Os sinais lógicos de controle da FSM (CIs 7408, 7404, 7432, 7474) são acionados pelos pinos GPIO do Raspberry Pi 5:
 
-| Sinal   | Função                            | Pino GPIO | Pino Físico (Header) |
-| ------- | --------------------------------- | --------- | -------------------- |
-| **S**   | Strobe / Processamento ativo      | `GPIO 17` | Pino 11              |
-| **V**   | Validade (1 = Aceito, 0 = Negado) | `GPIO 27` | Pino 13              |
-| **GND** | Terra Comum do Circuito           | `GND`     | Pino 6 ou 9          |
+| Sinal   | Função                             | Pino GPIO | Pino Físico (Header) |
+| ------- | ---------------------------------- | --------- | -------------------- |
+| **S**   | Strobe / Processamento ativo       | `GPIO 17` | Pino 11              |
+| **V**   | Validade (1 = Aceito/Negado)       | `GPIO 27` | Pino 13              |
+| **CLK** | Clock (Pulso de amostragem/latch)  | `GPIO 22` | Pino 15              |
+| **GND** | Terra Comum do Circuito            | `GND`     | Pino 6 ou 9/14       |
 
 _Nota: Os pinos podem ser alterados definindo as variáveis de ambiente `PIN_STROBE` e `PIN_VALIDADE`._
 
