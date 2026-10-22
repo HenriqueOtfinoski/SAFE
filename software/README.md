@@ -1,88 +1,123 @@
-# SAFE - Software (Raspberry Pi 5)
+# SAFE — Software
 
-Módulo de processamento leve e reconhecimento facial para **Raspberry Pi 5 (4 GB RAM)** com acionamento dos sinais **S (Strobe)** e **V (Validade)** da Máquina de Estados Finitos (FSM) via hardware GPIO.
+Software de controle de acesso do projeto SAFE. O sistema usa uma câmera para
+detectar e reconhecer rostos com OpenCV/LBPH, mantém os cadastros em uma API
+FastAPI e envia o resultado para uma máquina de estados finitos (FSM) por GPIO.
+O fluxo local foi pensado para Raspberry Pi 5; sem GPIO disponível, o controlador
+funciona em modo de simulação.
 
----
+## Como o projeto funciona
 
-## 🔌 Mapeamento de Pinos GPIO
+1. A API cadastra pessoas e armazena suas imagens faciais em SQLite.
+2. O reconhecedor lê o modelo LBPH salvo em `model/`. Se ainda não houver modelo,
+   treina com o `dataset/` local ou, se ele estiver vazio, consulta a API.
+3. A câmera captura frames; o Haar Cascade localiza os rostos e o LBPH tenta
+   identificar o maior rosto detectado.
+4. A identificação é confirmada ao atingir `FRAMES_CONFIRMACAO` ocorrências no
+   histórico recente. O resultado altera os sinais `S` e `V` da FSM.
 
-Os sinais lógicos de controle da FSM (CIs 7408, 7404, 7432, 7474) são acionados pelos pinos GPIO do Raspberry Pi 5:
+O modelo salvo é carregado sem consultar novamente a API. Depois de cadastrar ou
+alterar fotos, execute `python treinar.py` para gerar um modelo atualizado.
 
-| Sinal   | Função                             | Pino GPIO | Pino Físico (Header) |
-| ------- | ---------------------------------- | --------- | -------------------- |
-| **S**   | Strobe / Processamento ativo       | `GPIO 17` | Pino 11              |
-| **V**   | Validade (1 = Aceito/Negado)       | `GPIO 27` | Pino 13              |
-| **CLK** | Clock (Pulso de amostragem/latch)  | `GPIO 22` | Pino 15              |
-| **GND** | Terra Comum do Circuito            | `GND`     | Pino 6 ou 9/14       |
+## Requisitos
 
-_Nota: Os pinos podem ser alterados definindo as variáveis de ambiente `PIN_STROBE` e `PIN_VALIDADE`._
+- Python 3.12 (usado pela imagem Docker).
+- Câmera compatível com OpenCV para reconhecimento ou captura por webcam.
+- Raspberry Pi com GPIO para acionar a FSM; em outros ambientes o GPIO pode operar
+  em modo simulado.
+- Docker Compose é opcional e pode ser usado para executar a API.
 
----
+## Instalação
 
-## ⚙️ Tabela de Estados da FSM
-
-| Estado FSM     | Sinal S | Sinal V | Descrição                                              |
-| -------------- | :-----: | :-----: | ------------------------------------------------------ |
-| **Aguardando** |   `0`   |   `0`   | Câmera ativa, nenhum rosto em processamento.           |
-| **Validando**  |   `1`   |   `0`   | Rosto detectado, acumulando confirmação de identidade. |
-| **Aceito**     |   `0`   |   `1`   | Rosto reconhecido. Acesso Liberado.                    |
-| **Negado**     |   `1`   |   `1`   | Rosto não reconhecido ou abaixo do threshold.          |
-
----
-
-## 🚀 Como Executar no Raspberry Pi 5
-
-### 1. Instalação das Dependências
-
-No Raspberry Pi OS (Debian 12 Bookworm / 64-bit):
+Execute os comandos a partir desta pasta (`software/`):
 
 ```bash
-cd software
 python3 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
-> **Nota para Pi 5**: A biblioteca `gpiozero` inclusa no `requirements.txt` utiliza o backend `gpiod`/`lgpio` nativo do chip RP1 do Raspberry Pi 5. Em PCs/Macs sem GPIO, o sistema ativa automaticamente o modo de **Simulação Mock** sem erros.
+No Windows, ative o ambiente com `.venv\Scripts\activate`. Ajuste os valores de
+`.env` conforme o hardware e o ambiente.
 
----
+## Executar
 
-### 2. Executando o Reconhecimento Facial
+### API
 
-#### Modo Direto (Com tela/Monitor conectado):
+```bash
+cd api
+python -m alembic upgrade head
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+A documentação interativa do serviço fica em `http://localhost:8000/docs`.
+Para executar a API em contêiner:
+
+```bash
+docker compose up --build
+```
+
+O Compose publica a API na porta `8000`, aplica as migrações ao iniciar e persiste
+o banco no volume `safe_data`.
+
+### Reconhecimento facial
+
+Com janela de vídeo:
 
 ```bash
 python reconhecimento_facial/reconhecimento_facial.py
 ```
 
-#### Modo Headless (Em segundo plano / Servidor sem tela):
+Sem interface gráfica:
 
 ```bash
 HEADLESS=1 python reconhecimento_facial/reconhecimento_facial.py
 ```
 
----
-
-### 3. Treinamento Offline Rápido
-
-Para acelerar a inicialização no Raspberry Pi, você pode gerar o modelo LBPH pré-treinado (`modelo_lbph.xml`):
+Para treinar/exportar o modelo e testar manualmente as saídas GPIO:
 
 ```bash
 python treinar.py
+python testar_gpio.py
 ```
 
-O modelo gerado será recarregado instantaneamente em **milissegundos** no boot sem precisar consultar a API HTTP.
+Para capturar imagens com webcam, execute `python reconhecimento_facial/webcam.py`.
+Informe o identificador numérico da pessoa cadastrada na API; pressione `C` para
+capturar e `Q` para sair.
 
----
+## Configuração
 
-### 4. Captura de Fotos para Cadastro (Webcam)
+As variáveis abaixo podem ser definidas em `.env` ou no ambiente do processo:
 
-Para cadastrar novas fotos diretamente no dataset local ou API:
+| Variável | Padrão | Uso |
+| --- | --- | --- |
+| `PIN_STROBE` | `17` | GPIO do sinal `S` da FSM |
+| `PIN_VALIDADE` | `27` | GPIO do sinal `V` da FSM |
+| `PIN_CLOCK` | `22` | GPIO do clock da FSM |
+| `DURACAO_STROBE` | `2.0` | Duração, em segundos, do intervalo de resultado |
+| `CAMERA_INDEX` | `0` | Índice da câmera OpenCV |
+| `FRAME_LARGURA` / `FRAME_ALTURA` | `640` / `480` | Resolução solicitada à câmera |
+| `LBPH_THRESHOLD` | `70.0` | Limite de distância do reconhecedor LBPH |
+| `FRAMES_CONFIRMACAO` | `5` | Ocorrências para confirmar a identificação |
+| `DIRETORIO_MODELO` | `model` | Diretório dos arquivos LBPH |
+| `DIRETORIO_DATASET` | `dataset` | Diretório opcional das imagens locais |
+| `API_URL` | `http://127.0.0.1:8000` | Endereço consultado para carregar imagens |
+| `HEADLESS` | `0` | Use `1`, `true` ou `yes` para desativar a janela |
+
+## Documentação
+
+- [Índice e diagramas](../docs/README.md)
+- [Fluxo e arquitetura](../docs/funcionamento/README.md)
+- [Reconhecimento facial e treinamento](../docs/reconhecimento-facial/README.md)
+- [API e persistência](../docs/api/README.md)
+- [GPIO e máquina de estados](../docs/hardware/README.md)
+
+## Testes
+
+Com as dependências instaladas, execute a partir de `software/`:
 
 ```bash
-python reconhecimento_facial/webcam.py
+python -m pytest
 ```
-
-- Pressione **`C`** para capturar a foto.
-- Pressione **`Q`** para encerrar.
