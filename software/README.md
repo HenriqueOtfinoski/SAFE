@@ -121,3 +121,52 @@ Com as dependências instaladas, execute a partir de `software/`:
 ```bash
 python -m pytest
 ```
+<<<<<<< HEAD
+=======
+
+- Pressione **`C`** para capturar a foto.
+- Pressione **`Q`** para encerrar.
+
+---
+
+## 🖥️ Painel de Administração Web
+
+O SAFE possui um painel web completo para gerenciar as pessoas autorizadas no sistema, sem precisar usar a linha de comando.
+
+### Como acessar
+
+1. **Inicie a API** (na pasta `software/api/`):
+   ```bash
+   cd software/api
+   source venv/bin/activate
+   uvicorn app.main:app --host 0.0.0.0 --port 8000
+   ```
+2. **Abra o navegador** e acesse:
+   ```
+   http://IP_DO_RASPY:8000
+   ```
+   → Você será redirecionado automaticamente para `http://IP_DO_RASPY:8000/painel`.
+
+   > Se a API estiver rodando no mesmo computador, use `http://localhost:8000`.
+
+### Funcionalidades do Painel
+
+| Funcionalidade | Descrição |
+| --- | --- |
+| **Configuração da API** | Informe o IP/porta da API e verifique a conexão em tempo real. |
+| **Cadastrar Pessoa** | Formulário completo: nome, identificador, e-mail, data de nascimento e upload de fotos faciais (arrastar e soltar ou seleção de arquivo). |
+| **Listar Pessoas** | Tabela completa com busca por nome/identificador/e-mail e atualização em tempo real. |
+| **Editar Pessoa** | Altere os dados e adicione novas imagens faciais. Visualiza as fotos já salvas. |
+| **Excluir Pessoa** | Remove a pessoa e todas as imagens com confirmação de segurança. |
+
+### Arquivos do Painel
+
+| Arquivo | Localização | Descrição |
+| --- | --- | --- |
+| `index.html` | `api/app/assets/painel/` | Estrutura HTML do painel |
+| `style.css` | `api/app/assets/painel/` | Estilos visuais (tema escuro) |
+| `app.js` | `api/app/assets/painel/` | Lógica JavaScript (chamadas à API REST) |
+
+> **CORS:** Se acessar o painel de um computador diferente do Raspberry Pi, pode ser necessário configurar o middleware de CORS na API.
+
+>>>>>>> front

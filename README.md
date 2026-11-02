@@ -73,6 +73,12 @@ cd software
 python reconhecimento_facial/reconhecimento_facial.py
 ```
 
+## 🖥️ Painel de Administração
+
+O painel web permite cadastrar, editar e remover pessoas autorizadas sem usar a linha de comando.
+
+Após iniciar a API, acesse: `http://IP_DO_RASPY:8000/painel`
+
 Esses comandos são pontos de partida; detalhes de configuração, migrações do
 banco, treinamento do modelo, captura de imagens e execução headless estão no
 [guia do software](./software/README.md).
