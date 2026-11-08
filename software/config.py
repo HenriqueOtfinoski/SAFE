@@ -17,6 +17,9 @@ PIN_STROBE = int(os.getenv("PIN_STROBE", "17"))
 PIN_VALIDADE = int(os.getenv("PIN_VALIDADE", "27"))
 PIN_CLOCK = int(os.getenv("PIN_CLOCK", "22"))
 DURACAO_STROBE = float(os.getenv("DURACAO_STROBE", "2.0"))
+TEMPO_PROCESSAMENTO_CIRCUITO = float(
+    os.getenv("TEMPO_PROCESSAMENTO_CIRCUITO", "10.0")
+)
 
 # Configurações da Câmera e Processamento
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", "0"))

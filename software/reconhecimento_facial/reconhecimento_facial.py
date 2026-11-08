@@ -29,6 +29,7 @@ from config import (
     HEADLESS,
     LBPH_THRESHOLD,
     TAMANHO_ROSTO,
+    TEMPO_PROCESSAMENTO_CIRCUITO,
 )
 from controle_acesso import liberar_acesso, recusar_acesso
 from controle_gpio import gpio_controller
@@ -169,6 +170,7 @@ def main():
 
     historico = deque(maxlen=10)
     cooldown_ate = 0.0
+    validacao_ate = 0.0
 
     camera = cv2.VideoCapture(CAMERA_INDEX)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_LARGURA)
@@ -208,9 +210,14 @@ def main():
             if len(rostos) == 0:
                 gpio_controller.estado_aguardando()
                 historico.clear()
+                validacao_ate = 0.0
             else:
-                # Rosto detectado -> Muda FSM para Validando (S=1, V=0)
-                gpio_controller.estado_validando()
+                if validacao_ate == 0.0:
+                    # Mantém a FSM em Validando para o circuito se preparar.
+                    gpio_controller.estado_validando()
+                    validacao_ate = (
+                        time.monotonic() + TEMPO_PROCESSAMENTO_CIRCUITO
+                    )
 
                 # Processa o maior rosto detectado
                 rostos_ordenados = sorted(
@@ -218,30 +225,34 @@ def main():
                 )
                 x, y, largura, altura = rostos_ordenados[0]
 
-                rosto = imagem_cinza[y : y + altura, x : x + largura]
-                rosto = cv2.resize(rosto, TAMANHO_ROSTO)
-                rosto = cv2.equalizeHist(rosto)
-
-                pessoa_id, distancia = reconhecedor.predict(rosto)
-                historico.append(pessoa_id)
-
-                ocorrencias = historico.count(pessoa_id)
                 cor = (0, 255, 255)  # Amarelo (Validando)
-                texto = "Validando..."
+                if time.monotonic() < validacao_ate:
+                    texto = "Aguardando circuito..."
+                else:
+                    rosto = imagem_cinza[y : y + altura, x : x + largura]
+                    rosto = cv2.resize(rosto, TAMANHO_ROSTO)
+                    rosto = cv2.equalizeHist(rosto)
 
-                if ocorrencias >= FRAMES_CONFIRMACAO:
-                    if pessoa_id != -1 and pessoa_id in nomes:
-                        nome_reconhecido = nomes[pessoa_id]
-                        texto = f"Acesso Permitido: {nome_reconhecido}"
-                        cor = (0, 255, 0)
-                        liberar_acesso(nome_reconhecido)
-                    else:
-                        texto = "Acesso Negado"
-                        cor = (0, 0, 255)
-                        recusar_acesso()
+                    pessoa_id, distancia = reconhecedor.predict(rosto)
+                    historico.append(pessoa_id)
 
-                    historico.clear()
-                    cooldown_ate = time.time() + DURACAO_STROBE
+                    ocorrencias = historico.count(pessoa_id)
+                    texto = "Validando..."
+
+                    if ocorrencias >= FRAMES_CONFIRMACAO:
+                        if pessoa_id != -1 and pessoa_id in nomes:
+                            nome_reconhecido = nomes[pessoa_id]
+                            texto = f"Acesso Permitido: {nome_reconhecido}"
+                            cor = (0, 255, 0)
+                            liberar_acesso(nome_reconhecido)
+                        else:
+                            texto = "Acesso Negado"
+                            cor = (0, 0, 255)
+                            recusar_acesso()
+
+                        historico.clear()
+                        cooldown_ate = time.time() + DURACAO_STROBE
+                        validacao_ate = 0.0
 
                 if not HEADLESS:
                     cv2.rectangle(frame, (x, y), (x + largura, y + altura), cor, 2)

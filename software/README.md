@@ -97,6 +97,7 @@ As variáveis abaixo podem ser definidas em `.env` ou no ambiente do processo:
 | `PIN_VALIDADE` | `27` | GPIO do sinal `V` da FSM |
 | `PIN_CLOCK` | `22` | GPIO do clock da FSM |
 | `DURACAO_STROBE` | `2.0` | Duração, em segundos, do intervalo de resultado |
+| `TEMPO_PROCESSAMENTO_CIRCUITO` | `10.0` | Tempo em Validando antes de iniciar o reconhecimento |
 | `CAMERA_INDEX` | `0` | Índice da câmera OpenCV |
 | `FRAME_LARGURA` / `FRAME_ALTURA` | `640` / `480` | Resolução solicitada à câmera |
 | `LBPH_THRESHOLD` | `70.0` | Limite de distância do reconhecedor LBPH |
