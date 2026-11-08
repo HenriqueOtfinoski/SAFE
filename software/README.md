@@ -97,7 +97,6 @@ As variáveis abaixo podem ser definidas em `.env` ou no ambiente do processo:
 | `PIN_VALIDADE` | `27` | GPIO do sinal `V` da FSM |
 | `PIN_CLOCK` | `22` | GPIO do clock da FSM |
 | `DURACAO_STROBE` | `2.0` | Duração, em segundos, do intervalo de resultado |
-| `TEMPO_PROCESSAMENTO_CIRCUITO` | `10.0` | Tempo em Validando antes de iniciar o reconhecimento |
 | `CAMERA_INDEX` | `0` | Índice da câmera OpenCV |
 | `FRAME_LARGURA` / `FRAME_ALTURA` | `640` / `480` | Resolução solicitada à câmera |
 | `LBPH_THRESHOLD` | `70.0` | Limite de distância do reconhecedor LBPH |
@@ -122,8 +121,6 @@ Com as dependências instaladas, execute a partir de `software/`:
 ```bash
 python -m pytest
 ```
-<<<<<<< HEAD
-=======
 
 - Pressione **`C`** para capturar a foto.
 - Pressione **`Q`** para encerrar.
@@ -169,5 +166,3 @@ O SAFE possui um painel web completo para gerenciar as pessoas autorizadas no si
 | `app.js` | `api/app/assets/painel/` | Lógica JavaScript (chamadas à API REST) |
 
 > **CORS:** Se acessar o painel de um computador diferente do Raspberry Pi, pode ser necessário configurar o middleware de CORS na API.
-
->>>>>>> front

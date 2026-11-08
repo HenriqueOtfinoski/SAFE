@@ -31,12 +31,10 @@ Consulte o [diagrama de arquitetura](../diagramas/arquitetura.drawio) e o
 | Aceito | `0` | `1` | Pessoa reconhecida |
 | Negado | `1` | `1` | Pessoa desconhecida ou não confirmada |
 
-Ao iniciar, o controlador define Aguardando. Quando a câmera detecta um rosto,
-o processo define Validando e mantém esse estado por 10 segundos para permitir
-que o circuito se prepare; em seguida, inicia o reconhecimento. Esse intervalo
-pode ser ajustado por `TEMPO_PROCESSAMENTO_CIRCUITO`. O estado Aceito ou Negado
-é mantido pelo intervalo `DURACAO_STROBE`. Sem hardware GPIO acessível, usa modo
-simulado; nesse modo as alterações são registradas, mas não chegam a pinos físicos.
+Ao iniciar, o controlador define Aguardando. O processo de reconhecimento define
+Validando quando encontra um rosto e mantém Aceito ou Negado pelo intervalo
+`DURACAO_STROBE`. Sem hardware GPIO acessível, usa modo simulado; nesse modo as
+alterações são registradas, mas não chegam a pinos físicos.
 
 ## Teste manual
 

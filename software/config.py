@@ -4,6 +4,7 @@ from pathlib import Path
 # Carrega variáveis do arquivo .env se a biblioteca python-dotenv estiver instalada
 try:
     from dotenv import load_dotenv
+
     env_path = Path(__file__).resolve().parent / ".env"
     if env_path.exists():
         load_dotenv(dotenv_path=env_path)
@@ -17,9 +18,6 @@ PIN_STROBE = int(os.getenv("PIN_STROBE", "17"))
 PIN_VALIDADE = int(os.getenv("PIN_VALIDADE", "27"))
 PIN_CLOCK = int(os.getenv("PIN_CLOCK", "22"))
 DURACAO_STROBE = float(os.getenv("DURACAO_STROBE", "2.0"))
-TEMPO_PROCESSAMENTO_CIRCUITO = float(
-    os.getenv("TEMPO_PROCESSAMENTO_CIRCUITO", "10.0")
-)
 
 # Configurações da Câmera e Processamento
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", "0"))
@@ -33,11 +31,7 @@ LBPH_THRESHOLD = float(os.getenv("LBPH_THRESHOLD", "70.0"))
 
 # Caminhos de Arquivos e Diretório do Modelo
 CAMINHO_HAAR = (
-    BASE_DIR
-    / "api"
-    / "app"
-    / "assets"
-    / "haarcascade_frontalface_default.xml"
+    BASE_DIR / "api" / "app" / "assets" / "haarcascade_frontalface_default.xml"
 )
 
 NOME_DIR_MODELO = os.getenv("DIRETORIO_MODELO", "model")
