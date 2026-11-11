@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SAFE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="top">
+        <a class="brand" href="#/painel">
+          <span class="brand-mark" aria-hidden="true"></span>
+          SAFE
+        </a>
+        <nav class="nav">
+          <a href="#/painel" data-route="painel">Painel</a>
+          <a href="#/pessoas" data-route="pessoas">Pessoas</a>
+          <a href="#/historico" data-route="historico">Histórico</a>
+        </nav>
+        <p class="api-status" id="api-status">API</p>
+      </header>
+
+      <main id="view" class="view"></main>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
